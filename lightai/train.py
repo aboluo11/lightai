@@ -8,6 +8,7 @@ class Learner:
     trn_dl: DataLoader
     optimizer: optim.Optimizer
     evaluator: Callable
+    loss_fn: Callable
     state_dir: str = 'states'
     callbacks: List[Callback] = field(default_factory=list)
     epoch: int = 0
@@ -31,7 +32,7 @@ class Learner:
             val_loss, metric = self.evaluator()
             param = metric if metric is not None else val_loss
             for cb in callbacks:
-                cb.on_epoch_end(param)
+                cb.on_epoch_end(metric=param)
             self.log(trn_loss, val_loss, metric, mb)
             self.epoch += 1
 

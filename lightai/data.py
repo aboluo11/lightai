@@ -14,7 +14,7 @@ class DataLoader:
             batch = T(batch, self.cuda)
         elif isinstance(batch[0], str):
             return batch
-        elif isinstance(batch[0], collections.Sequence):
+        elif isinstance(batch[0], Sequence):
             batch = [self.collate(b) for b in zip(*batch)]
         return batch
 

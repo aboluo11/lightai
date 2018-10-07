@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from collections import OrderedDict
 import os
 from tensorboardX import SummaryWriter
-from typing import Callable, Optional, Collection, Any, Type, NamedTuple, List, Iterable
+from typing import Callable, Optional, Collection, Any, Type, NamedTuple, List, Iterable, Sequence
 from dataclasses import dataclass, field
 from fastprogress import master_bar, progress_bar, MasterBar
 import pickle
