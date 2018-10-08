@@ -1,7 +1,7 @@
 from .core import *
 
 class DataLoader:
-    def __init__(self, dataset, sampler, n_worker=os.cpu_count() // 2, cuda=True):
+    def __init__(self, dataset, sampler, n_worker=os.cpu_count()//2, cuda=True):
         self.sampler = sampler
         self.dataset = dataset
         self.n_worker = n_worker
