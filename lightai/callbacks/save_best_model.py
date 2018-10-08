@@ -9,15 +9,15 @@ class SaveBestModel(Callback):
         self.model_dir.mkdir(exist_ok=True)
         self.path = self.model_dir/name
         self.small_better = small_better
-        self.best_metric = None
+        self.best_metrics = None
         self.model = model
         self.optimizer = optimizer
 
-    def on_epoch_end(self, metric: float, **kwargs: Any):
+    def on_epoch_end(self, metrics: float, **kwargs):
         if self.small_better:
-            metric = -metric
-        if not self.best_metric or metric >= self.best_metric:
-            self.best_metric = metric
+            metrics = -metrics
+        if not self.best_metrics or metrics >= self.best_metrics:
+            self.best_metrics = metrics
             self.learner.save_model(self.name)
             torch.save({
                 'model': self.model.state_dict(),
