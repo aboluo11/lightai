@@ -18,7 +18,6 @@ class SaveBestModel(Callback):
             metrics = -metrics
         if not self.best_metrics or metrics >= self.best_metrics:
             self.best_metrics = metrics
-            self.learner.save_model(self.name)
             torch.save({
                 'model': self.model.state_dict(),
                 'optimizer': self.optimizer.state_dict()
