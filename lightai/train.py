@@ -18,7 +18,7 @@ class Learner:
         self.callbacks.append(Printer(self.has_metrics))
         self.callbacks.append(Logger(writer=self.writer, has_metrics=self.has_metrics))
 
-    def fit(self, n_epoch: int, sched: Optional[Callback]):
+    def fit(self, n_epoch: int, sched: Optional[Callback]=None):
         assert self.sched or sched
         if sched:
             self.sched = sched
