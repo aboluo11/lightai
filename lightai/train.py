@@ -20,8 +20,10 @@ class Learner:
         self.callbacks.append(Printer(self.has_metrics))
         self.callbacks.append(Logger(writer=self.writer, has_metrics=self.has_metrics))
 
-    def fit(self, n_epoch: int, sched: Callback):
-        self.sched = sched
+    def fit(self, n_epoch: int, sched: Optional[Callback]):
+        assert self.sched or sched
+        if sched:
+            self.sched = sched
         callbacks = self.callbacks + [self.sched]
         for epoch in range(n_epoch):
             start = time.time()
