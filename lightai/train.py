@@ -2,19 +2,19 @@ from .callbacks import *
 from .data import *
 from .core import *
 
-@dataclass
 class Learner:
-    model: nn.Module
-    trn_dl: DataLoader
-    optimizer: optim.Optimizer
-    evaluator: Callable
-    loss_fn: Callable
-    has_metrics: bool
-    state_dir: str = 'states'
-    callbacks: List[Callback] = field(default_factory=list)
-    writer: Optional[SummaryWriter] = None
-    def __post_init__(self):
-        self.state_dir = Path(self.state_dir)
+    def __init__(self, model: nn.Module, trn_dl: DataLoader, optimizer: optim.Optimizer,
+                 evaluator: Callable, loss_fn: Callable, has_metrics: bool, state_dir :str='states',
+                 callbacks: List[Callback]=[], writer: Optional[SummaryWriter]=None):
+        self.model = model
+        self.trn_dl = trn_dl
+        self.optimizer = optimizer
+        self.evaluator = evaluator
+        self.loss_fn = loss_fn
+        self.has_metrics = has_metrics
+        self.callbacks = callbacks
+        self.writer = writer
+        self.state_dir = Path(state_dir)
         self.state_dir.mkdir(exist_ok=True)
         self.sched: Optional[Callback] = None
         self.callbacks.append(Printer(self.has_metrics))
