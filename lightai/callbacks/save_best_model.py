@@ -25,5 +25,5 @@ class SaveBestModel(Callback):
             }, self.path)
 
     def on_train_end(self, **kwargs):
-        best = -self.best_metric if self.small_better else self.best_metric
+        best = -self.best_metrics if self.small_better else self.best_metrics
         print(f'best metric: {best:.6f}')
