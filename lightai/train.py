@@ -4,7 +4,7 @@ from .core import *
 
 class Learner:
     def __init__(self, model: nn.Module, trn_dl: DataLoader, optimizer: optim.Optimizer,
-                 evaluator: Callable, loss_fn: Callable, has_metrics: bool, state_dir :str='states',
+                 evaluator: Callable, loss_fn: Callable, has_metrics: bool,
                  callbacks: List[Callback]=[], writer: Optional[SummaryWriter]=None):
         self.model = model
         self.trn_dl = trn_dl
@@ -14,8 +14,6 @@ class Learner:
         self.has_metrics = has_metrics
         self.callbacks = callbacks
         self.writer = writer
-        self.state_dir = Path(state_dir)
-        self.state_dir.mkdir(exist_ok=True)
         self.sched: Optional[Callback] = None
         self.callbacks.append(Printer(self.has_metrics))
         self.callbacks.append(Logger(writer=self.writer, has_metrics=self.has_metrics))
@@ -37,7 +35,8 @@ class Learner:
             trn_loss = np.mean(losses)
             eval_res = self.evaluator()
             for cb in callbacks:
-                cb.on_epoch_end(trn_loss=trn_loss, eval_res=eval_res, elapsed_time=time.time()-start, epoch=epoch)
+                cb.on_epoch_end(trn_loss=trn_loss, eval_res=eval_res, elapsed_time=time.time()-start, epoch=epoch,
+                                learner=self)
         for cb in callbacks:
             cb.on_train_end()
 
@@ -48,8 +47,3 @@ class Learner:
         loss.backward()
         self.optimizer.step()
         return loss.item()
-
-    def save_all(self, name):
-        torch.save({
-            'learner': self,
-        }, self.state_dir/name, dill)
