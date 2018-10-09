@@ -9,14 +9,16 @@ class Learner:
     optimizer: optim.Optimizer
     evaluator: Callable
     loss_fn: Callable
+    has_metrics: bool
     state_dir: str = 'states'
     callbacks: List[Callback] = field(default_factory=list)
-    epoch: int = 0
     writer: Optional[SummaryWriter] = None
     def __post_init__(self):
         self.state_dir = Path(self.state_dir)
         self.state_dir.mkdir(exist_ok=True)
         self.sched: Optional[Callback] = None
+        self.callbacks.append(Printer(self.has_metrics))
+        self.callbacks.append(Logger(writer=self.writer, has_metrics=self.has_metrics))
 
     def fit(self, n_epoch: int, sched: Callback):
         self.sched = sched
@@ -31,12 +33,11 @@ class Learner:
                 trn_loss = self.step(x, target)
                 losses.append(trn_loss)
             trn_loss = np.mean(losses)
-            val_loss, metrics = self.evaluator()
-            param = metrics if metrics is not None else val_loss
+            eval_res = self.evaluator()
             for cb in callbacks:
-                cb.on_epoch_end(metrics=param)
-            self.log(trn_loss, val_loss, metrics, start, epoch+1)
-            self.epoch += 1
+                cb.on_epoch_end(trn_loss=trn_loss, eval_res=eval_res, elapsed_time=time.time()-start, epoch=epoch)
+        for cb in callbacks:
+            cb.on_train_end()
 
     def step(self, x: np.ndarray, target: np.ndarray)->float:
         predict = self.model(x)
@@ -45,25 +46,6 @@ class Learner:
         loss.backward()
         self.optimizer.step()
         return loss.item()
-
-    def log(self, trn_loss: float, val_loss: float, metrics: Optional[float], start: float, epoch: int):
-        width = 11
-        precision = 6
-        message = ''
-        for loss in (trn_loss, val_loss):
-            message += f'{loss:{width}.{precision}}'
-        if metrics is not None:
-            message += f'{metrics:{width}.{precision}}'
-        elapsed_time = time.time() - start
-        message += f'{elapsed_time:{width}.{precision}}'
-        print(message)
-        if self.writer:
-            self.writer.add_scalars('loss', {
-                'train': trn_loss,
-                'val': val_loss
-            }, self.epoch)
-            if metrics is not None:
-                self.writer.add_scalar('metirc', metrics, self.epoch)
 
     def save_all(self, name):
         torch.save({

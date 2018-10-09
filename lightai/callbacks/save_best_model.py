@@ -13,7 +13,8 @@ class SaveBestModel(Callback):
         self.model = model
         self.optimizer = optimizer
 
-    def on_epoch_end(self, metrics: float, **kwargs):
+    def on_epoch_end(self, eval_res: List[float], **kwargs):
+        metrics = eval_res[-1]
         if self.small_better:
             metrics = -metrics
         if not self.best_metrics or metrics >= self.best_metrics:
@@ -22,3 +23,7 @@ class SaveBestModel(Callback):
                 'model': self.model.state_dict(),
                 'optimizer': self.optimizer.state_dict()
             }, self.path)
+
+    def on_train_end(self, **kwargs):
+        best = -self.best_metric if self.small_better else self.best_metric
+        print(f'best metric: {best:.6f}')
