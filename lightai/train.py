@@ -39,6 +39,7 @@ class Learner:
                                 learner=self)
         for cb in callbacks:
             cb.on_train_end()
+        self.sched = None
 
     def step(self, x: np.ndarray, target: np.ndarray)->float:
         predict = self.model(x)
