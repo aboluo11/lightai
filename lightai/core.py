@@ -18,6 +18,7 @@ from typing import Callable, Optional, Collection, Any, Type, NamedTuple, List, 
 from dataclasses import dataclass, field
 from fastprogress import master_bar, progress_bar, MasterBar
 import pickle
+import dill
 
 import torch
 from torch import nn, Tensor, optim

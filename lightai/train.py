@@ -50,4 +50,4 @@ class Learner:
     def save_all(self, name):
         torch.save({
             'learner': self,
-        }, self.state_dir/name)
+        }, self.state_dir/name, dill)
