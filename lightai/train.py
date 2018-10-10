@@ -4,25 +4,26 @@ from .core import *
 
 class Learner:
     def __init__(self, model: nn.Module, trn_dl: DataLoader, optimizer: optim.Optimizer,
-                 evaluator: Callable, loss_fn: Callable, has_metrics: bool,
+                 evaluator: Callable, loss_fn: Callable, metrics: List,
                  callbacks: List[Callback]=[], writer: Optional[SummaryWriter]=None):
         self.model = model
         self.trn_dl = trn_dl
         self.optimizer = optimizer
         self.evaluator = evaluator
         self.loss_fn = loss_fn
-        self.has_metrics = has_metrics
         self.callbacks = callbacks
         self.writer = writer
         self.sched: Optional[Callback] = None
-        self.callbacks.append(Printer(self.has_metrics))
-        self.callbacks.append(Logger(writer=self.writer, has_metrics=self.has_metrics))
+        self.callbacks.append(Printer(metrics))
+        self.callbacks.append(Logger(writer=self.writer, metrics=metrics))
 
     def fit(self, n_epoch: int, sched: Optional[Callback]=None):
         assert self.sched or sched
         if sched:
             self.sched = sched
         callbacks = self.callbacks + [self.sched]
+        for cb in callbacks:
+            cb.on_train_begin()
         for epoch in range(n_epoch):
             start = time.time()
             for cb in callbacks:
