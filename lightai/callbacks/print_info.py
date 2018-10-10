@@ -11,6 +11,7 @@ class Printer(Callback):
         names = [metric.__class__.__name__ for metric in self.metrics]
         names = ['epoch', 'train_loss', 'val_loss'] + names + ['time']
         names_layout = '{:^11}' * len(names)
+        names = [name[:10] for name in names]
         print(names_layout.format(*names))
 
     def on_epoch_end(self, trn_loss: float, eval_res: List[float], elapsed_time: float, epoch: int, **kwargs):
