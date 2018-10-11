@@ -39,10 +39,10 @@ class Learner:
                 losses.append(trn_loss)
             trn_loss = np.mean(losses)
             eval_res = self.evaluator()
+            self.epoch += 1
             for cb in callbacks:
                 cb.on_epoch_end(trn_loss=trn_loss, eval_res=eval_res, elapsed_time=time.time()-start, epoch=self.epoch,
                                 learner=self)
-            self.epoch += 1
         for cb in callbacks:
             cb.on_train_end()
         self.sched = None
