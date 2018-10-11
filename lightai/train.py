@@ -14,13 +14,17 @@ class Learner:
         self.callbacks = callbacks
         self.writer = writer
         self.sched: Optional[Callback] = None
+        self.epoch = 0
         self.callbacks.append(Printer(metrics))
         self.callbacks.append(Logger(writer=self.writer, metrics=metrics))
 
-    def fit(self, n_epoch: int, sched: Optional[Callback]=None):
+    def fit(self, n_epoch: Optional[int]=None, sched: Optional[Callback]=None):
         assert self.sched or sched
         if sched:
             self.sched = sched
+            self.sched.total_epoch = n_epoch
+        else:
+            n_epoch = self.sched.total_epoch - self.epoch
         callbacks = self.callbacks + [self.sched]
         for cb in callbacks:
             cb.on_train_begin()
@@ -36,8 +40,9 @@ class Learner:
             trn_loss = np.mean(losses)
             eval_res = self.evaluator()
             for cb in callbacks:
-                cb.on_epoch_end(trn_loss=trn_loss, eval_res=eval_res, elapsed_time=time.time()-start, epoch=epoch,
+                cb.on_epoch_end(trn_loss=trn_loss, eval_res=eval_res, elapsed_time=time.time()-start, epoch=self.epoch,
                                 learner=self)
+            self.epoch += 1
         for cb in callbacks:
             cb.on_train_end()
         self.sched = None
