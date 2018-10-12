@@ -17,6 +17,7 @@ from tensorboardX import SummaryWriter
 from typing import Callable, Optional, Collection, Any, Type, NamedTuple, List, Iterable, Sequence
 import pickle
 import dill
+from functools import partial
 
 import torch
 from torch import nn, Tensor, optim
