@@ -29,7 +29,7 @@ from torch.utils.data import BatchSampler, RandomSampler, Sampler, SequentialSam
 def T(x: np.ndarray, cuda=True):
     if isinstance(x, (list, tuple)):
         return [T(each) for each in x]
-    # x = np.ascontiguousarray(x)
+    x = np.ascontiguousarray(x)
     if x.dtype in (np.uint8, np.int8, np.int16, np.int32, np.int64):
         x = torch.from_numpy(x.astype(np.int64))
     elif x.dtype in (np.float32, np.float64):
