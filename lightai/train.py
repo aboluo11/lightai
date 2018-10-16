@@ -35,8 +35,14 @@ class Learner:
             self.model.train()
             losses = []
             for x, target in self.trn_dl:
+                for cb in callbacks:
+                    cb.on_batch_begin()
                 trn_loss = self.step(x, target)
                 losses.append(trn_loss)
+                for cb in callbacks:
+                    stop = cb.on_batch_end(trn_loss=trn_loss)
+                    if stop:
+                        return
             trn_loss = np.mean(losses)
             eval_res = self.evaluator()
             self.epoch += 1
