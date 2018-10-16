@@ -4,10 +4,11 @@ from ..callback import *
 
 class SaveBestModel(Callback):
     def __init__(self, model: nn.Module, optimizer: optim.Optimizer, small_better: bool, model_dir: str='models',
-                 name: str='best'):
+                 name: Optional[str]=None):
         self.model_dir = Path(model_dir)
-        self.model_dir.mkdir(exist_ok=True)
-        self.path = self.model_dir/name
+        self.model_dir.mkdir(exist_ok=True, parents=True)
+        if name:
+            self.path = self.model_dir/name
         self.small_better = small_better
         self.best_metrics = None
         self.model = model
