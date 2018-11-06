@@ -1,3 +1,6 @@
 from distutils.core import setup
 
-setup(name='lightai')
+setup(
+    name='lightai',
+    packages=['lightai']
+)
