@@ -1,3 +1,3 @@
 from distutils.core import setup
 
-setup()
+setup(name='lightai')
