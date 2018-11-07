@@ -22,7 +22,6 @@ class Learner:
             cb.on_train_begin()
         mb = master_bar(range(n_epoch))
         for epoch in mb:
-            start = time.time()
             for cb in callbacks:
                 cb.on_epoch_begin()
             self.model.train()
@@ -41,7 +40,7 @@ class Learner:
             eval_res = self.evaluator()
             self.epoch += 1
             for cb in callbacks:
-                cb.on_epoch_end(trn_loss=trn_loss, eval_res=eval_res, elapsed_time=time.time()-start, epoch=self.epoch,
+                cb.on_epoch_end(trn_loss=trn_loss, eval_res=eval_res, epoch=self.epoch,
                                 learner=self, bar=mb)
         for cb in callbacks:
             cb.on_train_end()
