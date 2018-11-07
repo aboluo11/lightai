@@ -18,6 +18,7 @@ from typing import Callable, Optional, Collection, Any, Type, NamedTuple, List, 
 import pickle
 import dill
 from functools import partial
+import cv2
 
 import torch
 from torch import nn, Tensor, optim
