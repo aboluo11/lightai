@@ -34,6 +34,7 @@ class Learner:
             self.model.train()
             losses = []
             for x, target in self.trn_dl:
+                x, target = x.cuda(), target.cuda()
                 for cb in callbacks:
                     cb.on_batch_begin()
                 trn_loss = self.step(x, target)
