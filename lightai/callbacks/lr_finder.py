@@ -17,19 +17,26 @@ class SmoothenValue():
 
 
 class LRFinder(Callback):
-    def __init__(self, optimizer, min_lr, max_lr, n_iter):
+    def __init__(self, model, optimizer, min_lr, max_lr, n_iter):
         self.smoother = SmoothenValue()
         self.optimizer = optimizer
         self.lrs = np.geomspace(min_lr, max_lr, num=n_iter, endpoint=True)
         self.losses = []
         self.iter = 0
         self.best = None
+        self.save_path = Path('saved')
+        self.save_path.mkdir(exist_ok=True)
+        self.model = model
 
-    def on_batch_begin(self):
+    def on_train_begin(self, **kwargs):
+        torch.save({'model': self.model.state_dict(),
+                    'optimizer': self.optimizer.state_dict()}, self.save_path/'temp')
+
+    def on_batch_begin(self, **kwargs):
         self.optimizer.param_groups[0]['lr'] = self.lrs[self.iter]
         self.iter += 1
 
-    def on_batch_end(self, trn_loss: float)->bool:
+    def on_batch_end(self, trn_loss: float, **kwargs)->bool:
         trn_loss = self.smoother(trn_loss)
         self.losses.append(trn_loss)
         if self.best == None or trn_loss < self.best:
@@ -37,6 +44,11 @@ class LRFinder(Callback):
         if trn_loss > self.best*2:
             return True
         return False
+
+    def on_train_end(self, **kwargs):
+        state_dict = torch.load(self.save_path/'temp')
+        self.model.load_state_dict(state_dict['model'])
+        self.optimizer.load_state_dict(state_dict['optimizer'])
 
     def plot(self, skip_begin=0, skip_end=0):
         total_len = len(self.losses)

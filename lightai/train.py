@@ -27,7 +27,7 @@ class Learner:
                 cb.on_epoch_begin()
             self.model.train()
             losses = []
-            for x, target in progress_bar(self.trn_dl):
+            for x, target in progress_bar(self.trn_dl, parent=mb):
                 x, target = x.cuda(), target.cuda()
                 for cb in callbacks:
                     cb.on_batch_begin()
