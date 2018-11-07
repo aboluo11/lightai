@@ -14,5 +14,6 @@ class Printer(Callback):
         names = [name[:10] for name in names]
         print(names_layout.format(*names))
 
-    def on_epoch_end(self, trn_loss: float, eval_res: List[float], elapsed_time: float, epoch: int, **kwargs):
-        print(self.layout.format(epoch, trn_loss, *eval_res, elapsed_time))
+    def on_epoch_end(self, trn_loss: float, eval_res: List[float], elapsed_time: float, epoch: int,
+                     bar, **kwargs):
+        bar.write(self.layout.format(epoch, trn_loss, *eval_res, elapsed_time))

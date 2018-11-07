@@ -20,7 +20,8 @@ class Learner:
         callbacks = self.callbacks + [sched]
         for cb in callbacks:
             cb.on_train_begin()
-        for epoch in master_bar(range(n_epoch)):
+        mb = master_bar(range(n_epoch))
+        for epoch in mb:
             start = time.time()
             for cb in callbacks:
                 cb.on_epoch_begin()
@@ -41,7 +42,7 @@ class Learner:
             self.epoch += 1
             for cb in callbacks:
                 cb.on_epoch_end(trn_loss=trn_loss, eval_res=eval_res, elapsed_time=time.time()-start, epoch=self.epoch,
-                                learner=self)
+                                learner=self, bar=mb)
         for cb in callbacks:
             cb.on_train_end()
         self.sched = None
