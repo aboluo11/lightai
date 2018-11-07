@@ -1,5 +1,4 @@
 from .callbacks import *
-from .data import *
 from .core import *
 
 class Learner:
