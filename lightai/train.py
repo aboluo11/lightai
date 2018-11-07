@@ -17,7 +17,7 @@ class Learner:
         self.callbacks.append(Logger(writer=self.writer, metrics=metrics))
 
     def fit(self, n_epoch: Optional[int]=None, sched: Optional[Callback]=None):
-        callbacks = self.callbacks + sched
+        callbacks = self.callbacks + [sched]
         for cb in callbacks:
             cb.on_train_begin()
         for epoch in master_bar(range(n_epoch)):
