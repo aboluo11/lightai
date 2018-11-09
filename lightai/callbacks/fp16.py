@@ -50,3 +50,8 @@ class FP16(Callback):
 
     def on_backward_begin(self, loss, **kwargs):
         loss *= self.loss_scale
+
+
+def to_fp16(learner, loss_scale):
+    fp16 = FP16(learner, loss_scale)
+    learner.callbacks.append(fp16)
