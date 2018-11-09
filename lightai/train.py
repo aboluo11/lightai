@@ -30,7 +30,7 @@ class Learner:
                 x, target = x.cuda(), target.cuda()
                 for cb in callbacks:
                     cb.on_batch_begin(x=x, target=target)
-                trn_loss = self.step(x, target)
+                trn_loss = self.step(x, target, callbacks)
                 losses.append(trn_loss)
                 for cb in callbacks:
                     stop = cb.on_batch_end(trn_loss=trn_loss)
