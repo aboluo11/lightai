@@ -11,7 +11,7 @@ def bn_to_float(module):
     if isinstance(module, torch.nn.modules.batchnorm._BatchNorm):
         module.float()
     for child in module.children():
-        BN_convert_float(child)
+        bn_to_float(child)
 
 class OptimWrapper:
     def __init__(self, optimizer, model_params, master_params, loss_scale):
