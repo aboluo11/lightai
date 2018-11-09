@@ -2,9 +2,8 @@ from ..core import *
 from ..callback import *
 
 def get_params(model):
-    """model: fp32"""
     model_params = [param for param in model.parameters() if param.requires_grad]
-    master_params = [param.clone().detach() for param in model_params]
+    master_params = [param.clone().float().detach() for param in model_params]
     return model_params, master_params
 
 def bn_to_float(module):
