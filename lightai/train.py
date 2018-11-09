@@ -1,6 +1,5 @@
 from .callbacks import *
 from .core import *
-from .data import *
 
 class Learner:
     def __init__(self, model: nn.Module, trn_dl: DataLoaderWrapper, optimizer: optim.Optimizer,

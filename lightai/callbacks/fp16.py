@@ -16,6 +16,13 @@ def batch_to_half(batch):
     x, target = batch
     return [x.half(), target]
 
+class tofp16(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, input):
+        return input.half()
+
 class OptimWrapper:
     def __init__(self, optimizer, model_params, master_params, loss_scale):
         self.model_params = model_params
@@ -46,10 +53,8 @@ class FP16(Callback):
         model_params, master_params = get_params(model)
         model.half()
         bn_to_float(model)
+        self.learner.model = nn.Sequential(tofp16(), model)
         self.learner.optimizer = OptimWrapper(self.learner.optimizer, model_params, master_params, self.loss_scale)
-
-        self.learner.trn_dl.add_tsfm(batch_to_half)
-        self.learner.evaluator.val_dl.add_tsfm(batch_to_half)
 
     def on_loss_begin(self, predict, **kwargs):
         predict.float()
