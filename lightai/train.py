@@ -29,7 +29,7 @@ class Learner:
             for x, target in progress_bar(self.trn_dl, parent=mb):
                 x, target = x.cuda(), target.cuda()
                 for cb in callbacks:
-                    cb.on_batch_begin(x, target)
+                    cb.on_batch_begin(x=x, target=target)
                 trn_loss = self.step(x, target)
                 losses.append(trn_loss)
                 for cb in callbacks:
