@@ -46,10 +46,14 @@ class Learner:
             cb.on_train_end()
         self.sched = None
 
-    def step(self, x: np.ndarray, target: np.ndarray)->float:
+    def step(self, x: np.ndarray, target: np.ndarray, callbacks)->float:
         predict = self.model(x)
+        for cb in callbacks:
+            cb.on_loss_begin(predict)
         loss = self.loss_fn(predict, target)
         self.optimizer.zero_grad()
+        for cb in callbacks:
+            cb.on_backward_begin()
         loss.backward()
         self.optimizer.step()
         return loss.item()
