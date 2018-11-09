@@ -2,7 +2,7 @@ from .callbacks import *
 from .core import *
 
 class Learner:
-    def __init__(self, model: nn.Module, trn_dl: DataLoaderWrapper, optimizer: optim.Optimizer,
+    def __init__(self, model: nn.Module, trn_dl: DataLoader, optimizer: optim.Optimizer,
                  evaluator: Callable, loss_fn: Callable, metrics: List,
                  callbacks: List[Callback]=[], writer: Optional[SummaryWriter]=None):
         self.model = model
