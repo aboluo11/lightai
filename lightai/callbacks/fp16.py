@@ -51,6 +51,9 @@ class FP16(Callback):
     def on_backward_begin(self, loss, **kwargs):
         loss *= self.loss_scale
 
+    def on_batch_begin(self, x, target, **kwargs):
+        x.half()
+
 
 def to_fp16(learner, loss_scale):
     fp16 = FP16(learner, loss_scale)
