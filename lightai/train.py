@@ -73,3 +73,4 @@ class Learner:
                 bses.append(target.shape[0])
             loss = np.average(torch.stack(losses).cpu().numpy(), weights=bses)
             res = [loss] + [metric.res() for metric in self.metrics]
+            return res
