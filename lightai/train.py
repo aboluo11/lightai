@@ -18,13 +18,13 @@ class Learner:
 
     def fit(self, n_epoch: Optional[int]=None, sched: Optional[Callback]=None):
         callbacks = self.callbacks + [sched]
-        for cb in callbacks:
-            cb.on_train_begin()
         mb = master_bar(range(n_epoch))
+        for cb in callbacks:
+            cb.on_train_begin(mb=mb)
         for epoch in mb:
+            self.model.train()
             for cb in callbacks:
                 cb.on_epoch_begin()
-            self.model.train()
             losses = []
             for x, target in progress_bar(self.trn_dl, parent=mb):
                 x, target = x.cuda(), target.cuda()
@@ -41,7 +41,7 @@ class Learner:
             self.epoch += 1
             for cb in callbacks:
                 cb.on_epoch_end(trn_loss=trn_loss, eval_res=eval_res, epoch=self.epoch,
-                                learner=self, bar=mb)
+                                learner=self, mb=mb)
         for cb in callbacks:
             cb.on_train_end()
         self.sched = None
