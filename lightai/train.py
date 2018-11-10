@@ -52,7 +52,7 @@ class Learner:
         loss = self.loss_fn(predict, target)
         self.optimizer.zero_grad()
         for cb in callbacks:
-            cb.on_backward_begin()
+            cb.on_backward_begin(loss=loss)
         loss.backward()
         self.optimizer.step()
         return loss.item()
