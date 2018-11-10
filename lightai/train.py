@@ -17,7 +17,7 @@ class Learner:
         self.callbacks.append(Printer(metrics))
         self.callbacks.append(Logger(writer=self.writer, metrics=metrics))
 
-    def fit(self, n_epoch: Optional[int]=None, sched: Optional[Callback]=None):
+    def fit(self, n_epoch: Optional[int]=None, sched: Optional[Callback]=None, loss_scale=512):
         callbacks = self.callbacks + [sched]
         mb = master_bar(range(n_epoch))
         for cb in callbacks:
@@ -31,7 +31,7 @@ class Learner:
                 x, target = x.cuda(), target.cuda()
                 for cb in callbacks:
                     cb.on_batch_begin(x=x, target=target)
-                trn_loss = self.step(x, target, callbacks)
+                trn_loss = self.step(x, target, loss_scale)
                 losses.append(trn_loss)
                 for cb in callbacks:
                     stop = cb.on_batch_end(trn_loss=trn_loss)
@@ -47,16 +47,14 @@ class Learner:
             cb.on_train_end()
         self.sched = None
 
-    def step(self, x: np.ndarray, target: np.ndarray, callbacks)->float:
+    def step(self, x: np.ndarray, target: np.ndarray, loss_scale)->float:
         predict = self.model(x)
         predict = predict.float()
         loss = self.loss_fn(predict, target)
         self.optimizer.zero_grad()
-        for cb in callbacks:
-            cb.on_backward_begin(loss=loss)
         loss.backward()
         self.optimizer.step()
-        return loss.item()
+        return loss.item()/loss_scale
 
     def evaluate(self):
         self.model.eval()

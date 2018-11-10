@@ -25,7 +25,7 @@ class OptimWrapper:
         self.model_params = model_params
         self.master_params = master_params
         self.loss_scale = loss_scale
-        self.optimizer = optimizer
+        self.optimizer = optimizer.__class__(master_params)
 
     def step(self):
         for model, master in zip(self.model_params, self.master_params):
@@ -40,23 +40,10 @@ class OptimWrapper:
     def zero_grad(self):
         self.optimizer.zero_grad()
 
-class FP16(Callback):
-    def __init__(self, learner, loss_scale):
-        self.learner = learner
-        self.loss_scale = loss_scale
-
-    def on_train_begin(self, **kwargs):
-        model = self.learner.model
-        model_params, master_params = get_params(model)
-        model.half()
-        bn_to_float(model)
-        self.learner.model = nn.Sequential(tofp16(), model)
-        self.learner.optimizer = OptimWrapper(self.learner.optimizer, model_params, master_params, self.loss_scale)
-
-    def on_backward_begin(self, loss, **kwargs):
-        loss *= self.loss_scale
-
-
 def to_fp16(learner, loss_scale):
-    fp16 = FP16(learner, loss_scale)
-    learner.callbacks.append(fp16)
+    model = learner.model
+    model.half()
+    bn_to_float(model)
+    model_params, master_params = get_params(model)
+    learner.model = nn.Sequential(tofp16(), model)
+    learner.optimizer = OptimWrapper(learner.optimizer, model_params, master_params, loss_scale)
