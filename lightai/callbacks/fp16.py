@@ -12,9 +12,6 @@ def bn_to_float(module):
     for child in module.children():
         bn_to_float(child)
 
-def batch_to_half(batch):
-    x, target = batch
-    return [x.half(), target]
 
 class tofp16(nn.Module):
     def __init__(self):
@@ -61,10 +58,6 @@ class FP16(Callback):
 
     def on_backward_begin(self, loss, **kwargs):
         loss *= self.loss_scale
-
-    def on_train_end(self, **kwargs):
-        self.learner.trn_dl.remove_tsfm(batch_to_half)
-        self.learner.evaluator.val_dl.remove_tsfm(batch_to_half)
 
 
 def to_fp16(learner, loss_scale):
