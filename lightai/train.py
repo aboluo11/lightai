@@ -50,7 +50,7 @@ class Learner:
     def step(self, x: np.ndarray, target: np.ndarray, loss_scale)->float:
         predict = self.model(x)
         predict = predict.float()
-        loss = self.loss_fn(predict, target)
+        loss = self.loss_fn(predict, target)*loss_scale
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
