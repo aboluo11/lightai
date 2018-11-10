@@ -65,7 +65,7 @@ class Learner:
         with torch.no_grad():
             for x, target in self.val_dl:
                 x, target = x.cuda(), target.cuda()
-                predict = self.model(img)
+                predict = self.model(x)
                 predict = predict.float()
                 for metric in self.metrics:
                     metric(predict, target)
