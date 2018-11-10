@@ -20,8 +20,5 @@ class Callback:
     def on_train_end(self, **kwargs):
         pass
 
-    def on_loss_begin(self, **kwargs):
-        pass
-
     def on_backward_begin(self, **kwargs):
         pass

@@ -53,9 +53,6 @@ class FP16(Callback):
         self.learner.model = nn.Sequential(tofp16(), model)
         self.learner.optimizer = OptimWrapper(self.learner.optimizer, model_params, master_params, self.loss_scale)
 
-    def on_loss_begin(self, predict, **kwargs):
-        predict.float()
-
     def on_backward_begin(self, loss, **kwargs):
         loss *= self.loss_scale
 

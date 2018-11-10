@@ -48,8 +48,7 @@ class Learner:
 
     def step(self, x: np.ndarray, target: np.ndarray, callbacks)->float:
         predict = self.model(x)
-        for cb in callbacks:
-            cb.on_loss_begin(predict)
+        predict = predict.float()
         loss = self.loss_fn(predict, target)
         self.optimizer.zero_grad()
         for cb in callbacks:
