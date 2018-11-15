@@ -9,7 +9,7 @@ class Printer(Callback):
 
     def on_train_begin(self, mb, **kwargs):
         names = [metric.__class__.__name__ for metric in self.metrics]
-        names = ['epoch', 'train_loss', 'val_loss'] + names + ['time']
+        names = ['epoch', 'train_loss', 'val_loss'] + names
         names_layout = '{:^11}' * len(names)
         names = [name[:10] for name in names]
         mb.write(names_layout.format(*names))

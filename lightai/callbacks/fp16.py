@@ -13,7 +13,7 @@ def bn_to_float(module):
         bn_to_float(child)
 
 
-class tofp16(nn.Module):
+class HalfInput(nn.Module):
     def __init__(self):
         super().__init__()
 
@@ -45,5 +45,5 @@ def to_fp16(learner, loss_scale):
     model.half()
     bn_to_float(model)
     model_params, master_params = get_params(model)
-    learner.model = nn.Sequential(tofp16(), model)
+    learner.model = nn.Sequential(HalfInput(), model)
     learner.optimizer = OptimWrapper(learner.optimizer, model_params, master_params, loss_scale)
