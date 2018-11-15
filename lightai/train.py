@@ -54,7 +54,7 @@ class Learner:
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
-        return loss.item()/loss_scale
+        return loss.item()/loss_scale/target.shape[0]
 
     def evaluate(self):
         self.model.eval()
