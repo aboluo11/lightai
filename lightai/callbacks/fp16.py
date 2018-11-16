@@ -1,10 +1,12 @@
 from ..core import *
 from ..callback import *
 
+
 def get_params(model):
     model_params = [param for param in model.parameters() if param.requires_grad]
     master_params = [param.clone().float().detach() for param in model_params]
     return model_params, master_params
+
 
 def bn_to_float(module):
     if isinstance(module, torch.nn.modules.batchnorm._BatchNorm):
@@ -17,8 +19,9 @@ class HalfInput(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, input):
-        return input.half()
+    def forward(self, x):
+        return x.half()
+
 
 class OptimWrapper:
     def __init__(self, optimizer, model_params, master_params, loss_scale):
@@ -39,6 +42,7 @@ class OptimWrapper:
 
     def zero_grad(self):
         self.optimizer.zero_grad()
+
 
 def to_fp16(learner, loss_scale):
     model = learner.model

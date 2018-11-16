@@ -1,10 +1,11 @@
 from .callbacks import *
 from .core import *
 
+
 class Learner:
     def __init__(self, model: nn.Module, trn_dl: DataLoader, val_dl: DataLoader,
                  optimizer: optim.Optimizer, loss_fn: Callable, metrics: List,
-                 callbacks: List[Callback]=[], writer: Optional[SummaryWriter]=None):
+                 callbacks: List[Callback] = [], writer: Optional[SummaryWriter] = None):
         self.model = model
         self.trn_dl = trn_dl
         self.val_dl = val_dl
@@ -17,7 +18,7 @@ class Learner:
         self.callbacks.append(Printer(metrics))
         self.callbacks.append(Logger(writer=self.writer, metrics=metrics))
 
-    def fit(self, n_epoch: Optional[int]=None, sched: Optional[Callback]=None, loss_scale=512):
+    def fit(self, n_epoch: Optional[int] = None, sched: Optional[Callback] = None, loss_scale=512):
         callbacks = self.callbacks + [sched]
         mb = master_bar(range(n_epoch))
         for cb in callbacks:
@@ -45,16 +46,15 @@ class Learner:
                                 learner=self, mb=mb)
         for cb in callbacks:
             cb.on_train_end()
-        self.sched = None
 
-    def step(self, x: np.ndarray, target: np.ndarray, loss_scale)->float:
+    def step(self, x: np.ndarray, target: np.ndarray, loss_scale) -> float:
         predict = self.model(x)
         predict = predict.float()
-        loss = self.loss_fn(predict, target)*loss_scale
+        loss = self.loss_fn(predict, target) * loss_scale
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
-        return loss.item()/loss_scale/target.shape[0]
+        return loss.item() / loss_scale / target.shape[0]
 
     def evaluate(self):
         self.model.eval()
