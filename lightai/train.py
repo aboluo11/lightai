@@ -4,12 +4,13 @@ from .core import *
 
 class Learner:
     def __init__(self, model: nn.Module, trn_dl: DataLoader, val_dl: DataLoader,
-                 optimizer: optim.Optimizer, loss_fn: Callable, metrics: List,
+                 optim_fn: optim.Optimizer, loss_fn: Callable, metrics: List,
                  callbacks: List[Callback] = [], writer: Optional[SummaryWriter] = None):
         self.model = model
         self.trn_dl = trn_dl
         self.val_dl = val_dl
-        self.optimizer = optimizer
+        self.optim_fn = optim_fn
+        self.optimizer = optim_fn(model.parameters())
         self.loss_fn = loss_fn
         self.callbacks = callbacks
         self.writer = writer
@@ -18,7 +19,7 @@ class Learner:
         self.callbacks.append(Printer(metrics))
         self.callbacks.append(Logger(writer=self.writer, metrics=metrics))
 
-    def fit(self, n_epoch: Optional[int] = None, sched: Optional[Callback] = None, loss_scale=512):
+    def fit(self, n_epoch: Optional[int] = None, sched: Optional[Callback] = None):
         callbacks = self.callbacks + [sched]
         mb = master_bar(range(n_epoch))
         for cb in callbacks:
@@ -32,7 +33,7 @@ class Learner:
                 x, target = x.cuda(), target.cuda()
                 for cb in callbacks:
                     cb.on_batch_begin(x=x, target=target)
-                trn_loss = self.step(x, target, loss_scale)
+                trn_loss = self.step(x, target)
                 losses.append(trn_loss)
                 for cb in callbacks:
                     stop = cb.on_batch_end(trn_loss=trn_loss)
@@ -47,14 +48,26 @@ class Learner:
         for cb in callbacks:
             cb.on_train_end()
 
-    def step(self, x: np.ndarray, target: np.ndarray, loss_scale) -> float:
+    def step(self, x: np.ndarray, target: np.ndarray) -> float:
         predict = self.model(x)
         predict = predict.float()
-        loss = self.loss_fn(predict, target) * loss_scale
+        true_loss = self.loss_fn(predict, target)
         self.optimizer.zero_grad()
+        for cb in self.callbacks:
+            a = cb.ob_backward_begin(true_loss)
+            if a is not None:
+                loss = a
         loss.backward()
+        for cb in self.callbacks:
+            a = cb.ob_backward_end(loss)
+            if a is not None:
+                true_loss = a
+        for cb in self.callbacks:
+            cb.on_step_begin()
         self.optimizer.step()
-        return loss.item() / loss_scale / target.shape[0]
+        for cb in self.callbacks:
+            cb.on_step_end()
+        return true_loss.item()
 
     def evaluate(self):
         self.model.eval()

@@ -23,25 +23,28 @@ class HalfInput(nn.Module):
         return x.half()
 
 
-class OptimWrapper:
-    def __init__(self, optimizer, model_params, master_params, loss_scale):
+class FP16(Callback):
+    def __init__(self, model_params, master_params, loss_scale):
         self.model_params = model_params
         self.master_params = master_params
         self.loss_scale = loss_scale
-        self.optimizer = optimizer.__class__(master_params)
 
-    def step(self):
+    def on_step_begin(self, **kwargs):
         for model, master in zip(self.model_params, self.master_params):
             if master.grad is None:
                 master.grad = master.data.new(*master.data.size())
             master.grad.data.copy_(model.grad.data)
             master.grad /= self.loss_scale
-        self.optimizer.step()
+
+    def on_step_end(self, **kwargs):
         for model, master in zip(self.model_params, self.master_params):
             model.data.copy_(master.data)
 
-    def zero_grad(self):
-        self.optimizer.zero_grad()
+    def on_backward_begin(self, loss, **kwargs):
+        return loss * self.loss_scale
+
+    def on_backward_end(self, loss, **kwargs):
+        return loss / self.loss_scale
 
 
 def to_fp16(learner, loss_scale):
@@ -50,4 +53,5 @@ def to_fp16(learner, loss_scale):
     bn_to_float(model)
     model_params, master_params = get_params(model)
     learner.model = nn.Sequential(HalfInput(), model)
-    learner.optimizer = OptimWrapper(learner.optimizer, model_params, master_params, loss_scale)
+    learner.optimizer = learner.optim_fn(master_params)
+    learner.callbacks.append(FP16(model_params, master_params, loss_scale))
