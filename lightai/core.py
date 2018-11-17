@@ -25,7 +25,7 @@ import torch
 from torch import nn, Tensor, optim
 import torch.nn.functional as F
 import torchvision
-from torch.utils.data import BatchSampler, RandomSampler, Sampler, SequentialSampler, DataLoader
+from torch.utils.data import BatchSampler, RandomSampler, Sampler, SequentialSampler, DataLoader, SubsetRandomSampler
 
 
 def T(x: np.ndarray, cuda=True):
