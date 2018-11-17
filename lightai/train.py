@@ -51,23 +51,19 @@ class Learner:
     def step(self, x: np.ndarray, target: np.ndarray) -> float:
         predict = self.model(x)
         predict = predict.float()
-        true_loss = self.loss_fn(predict, target)
+        loss = self.loss_fn(predict, target)
         self.optimizer.zero_grad()
         for cb in self.callbacks:
-            a = cb.ob_backward_begin(true_loss)
-            if a is not None:
-                loss = a
+            cb.on_backward_begin(loss=loss)
         loss.backward()
         for cb in self.callbacks:
-            a = cb.ob_backward_end(loss)
-            if a is not None:
-                true_loss = a
+            cb.on_backward_end(loss=loss)
         for cb in self.callbacks:
             cb.on_step_begin()
         self.optimizer.step()
         for cb in self.callbacks:
             cb.on_step_end()
-        return true_loss.item()
+        return loss.item()
 
     def evaluate(self):
         self.model.eval()

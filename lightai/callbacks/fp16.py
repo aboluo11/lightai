@@ -41,10 +41,10 @@ class FP16(Callback):
             model.data.copy_(master.data)
 
     def on_backward_begin(self, loss, **kwargs):
-        return loss * self.loss_scale
+        loss *= self.loss_scale
 
     def on_backward_end(self, loss, **kwargs):
-        return loss / self.loss_scale
+        loss /= self.loss_scale
 
 
 def to_fp16(learner, loss_scale):
