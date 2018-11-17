@@ -76,7 +76,7 @@ class Learner:
                 predict = predict.float()
                 for metric in self.metrics:
                     metric(predict, target)
-                losses.append(self.loss_fn(predict, target))
+                losses.append(self.loss_fn(predict, target) / target.shape[0])
                 bses.append(target.shape[0])
             loss = np.average(torch.stack(losses).cpu().numpy(), weights=bses)
             res = [loss] + [metric.res() for metric in self.metrics]
