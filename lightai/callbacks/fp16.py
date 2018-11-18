@@ -52,6 +52,6 @@ def to_fp16(learner, loss_scale):
     model.half()
     bn_to_float(model)
     model_params, master_params = get_params(model)
-    learner.model = nn.Sequential(HalfInput(), model)
+    # learner.model = nn.Sequential(HalfInput(), model)
     learner.optimizer = learner.optim_fn(master_params)
     learner.callbacks.append(FP16(model_params, master_params, loss_scale))
