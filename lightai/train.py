@@ -24,29 +24,31 @@ class Learner:
         mb = master_bar(range(n_epoch))
         for cb in callbacks:
             cb.on_train_begin(mb=mb)
-        for epoch in mb:
-            self.model.train()
-            for cb in callbacks:
-                cb.on_epoch_begin()
-            losses = []
-            for x, target in progress_bar(self.trn_dl, parent=mb):
-                x, target = x.cuda(), target.cuda()
+        try:
+            for epoch in mb:
+                self.model.train()
                 for cb in callbacks:
-                    cb.on_batch_begin(x=x, target=target)
-                trn_loss = self.step(x, target)
-                losses.append(trn_loss)
+                    cb.on_epoch_begin()
+                losses = []
+                for x, target in progress_bar(self.trn_dl, parent=mb):
+                    x, target = x.cuda(), target.cuda()
+                    for cb in callbacks:
+                        cb.on_batch_begin(x=x, target=target)
+                    trn_loss = self.step(x, target)
+                    losses.append(trn_loss)
+                    for cb in callbacks:
+                        stop = cb.on_batch_end(trn_loss=trn_loss)
+                        if stop:
+                            return
+                trn_loss = np.mean(losses)
+                eval_res = self.evaluate()
+                self.epoch += 1
                 for cb in callbacks:
-                    stop = cb.on_batch_end(trn_loss=trn_loss)
-                    if stop:
-                        return
-            trn_loss = np.mean(losses)
-            eval_res = self.evaluate()
-            self.epoch += 1
+                    cb.on_epoch_end(trn_loss=trn_loss, eval_res=eval_res, epoch=self.epoch,
+                                    learner=self, mb=mb)
+        finally:
             for cb in callbacks:
-                cb.on_epoch_end(trn_loss=trn_loss, eval_res=eval_res, epoch=self.epoch,
-                                learner=self, mb=mb)
-        for cb in callbacks:
-            cb.on_train_end()
+                cb.on_train_end()
 
     def step(self, x: np.ndarray, target: np.ndarray) -> float:
         predict = self.model(x)
