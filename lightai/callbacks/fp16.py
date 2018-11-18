@@ -29,6 +29,10 @@ class FP16(Callback):
         self.master_params = master_params
         self.loss_scale = loss_scale
 
+    def on_train_begin(self, **kwargs):
+        for model, master in zip(self.model_params, self.master_params):
+            master.data.copy_(model.data)
+
     def on_step_begin(self, **kwargs):
         for model, master in zip(self.model_params, self.master_params):
             if master.grad is None:
@@ -52,6 +56,5 @@ def to_fp16(learner, loss_scale):
     model.half()
     bn_to_float(model)
     model_params, master_params = get_params(model)
-    # learner.model = nn.Sequential(HalfInput(), model)
     learner.optimizer = learner.optim_fn(master_params)
     learner.callbacks.append(FP16(model_params, master_params, loss_scale))
