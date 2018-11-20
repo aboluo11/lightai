@@ -42,7 +42,6 @@ class FP16(Callback):
     def on_step_begin(self, **kwargs):
         for model, master in zip(self.model_params, self.master_params):
             if master.grad is None:
-                # master.grad = master.data.new(*master.data.size())
                 master.grad = master.detach().clone()
             master.grad.data.copy_(model.grad.data)
             master.grad /= self.loss_scale
