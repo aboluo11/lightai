@@ -4,7 +4,7 @@ from ..callback import *
 
 def get_params(model):
     model_params = [param for param in model.parameters() if param.requires_grad]
-    master_params = [param.clone().float().detach() for param in model_params]
+    master_params = [param.detach().clone().float() for param in model_params]
     return model_params, master_params
 
 
@@ -33,22 +33,25 @@ class FP16(Callback):
         for model, master in zip(self.model_params, self.master_params):
             master.data.copy_(model.data)
 
+    def on_backward_begin(self, loss, **kwargs):
+        loss *= self.loss_scale
+        for model in self.model_params:
+            model.grad.data.zero_()
+
+    def on_backward_end(self, loss, **kwargs):
+        loss /= self.loss_scale
+
     def on_step_begin(self, **kwargs):
         for model, master in zip(self.model_params, self.master_params):
             if master.grad is None:
-                master.grad = master.data.new(*master.data.size())
+                # master.grad = master.data.new(*master.data.size())
+                master.grad = master.detach().clone()
             master.grad.data.copy_(model.grad.data)
             master.grad /= self.loss_scale
 
     def on_step_end(self, **kwargs):
         for model, master in zip(self.model_params, self.master_params):
             model.data.copy_(master.data)
-
-    def on_backward_begin(self, loss, **kwargs):
-        loss *= self.loss_scale
-
-    def on_backward_end(self, loss, **kwargs):
-        loss /= self.loss_scale
 
 
 def to_fp16(learner, loss_scale):
