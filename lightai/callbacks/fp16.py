@@ -44,7 +44,7 @@ class FP16(Callback):
             if master.grad is None:
                 master.grad = master.detach().clone()
             master.grad.data.copy_(model.grad.data)
-            master.grad /= self.loss_scale
+            master.grad.data /= self.loss_scale
 
     def on_step_end(self, **kwargs):
         for model, master in zip(self.model_params, self.master_params):
