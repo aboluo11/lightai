@@ -6,3 +6,4 @@ from .save_periodically import *
 from .cyclic import *
 from .lr_finder import *
 from .fp16 import *
+from .lr_sched import *
