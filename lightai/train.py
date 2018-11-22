@@ -65,7 +65,7 @@ class Learner:
         self.optimizer.step()
         for cb in self.callbacks:
             cb.on_step_end()
-        return loss.item() / target.shape[0]
+        return loss.item()
 
     def evaluate(self):
         self.model.eval()
