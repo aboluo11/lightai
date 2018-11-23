@@ -19,10 +19,10 @@ class MyDataLoader(DataLoader):
     def __init__(self, dataset, batch_size=1, shuffle=False, sampler=None, batch_sampler=None,
                  num_workers=0, collate_fn=default_collate, pin_memory=False, drop_last=False,
                  timeout=0, worker_init_fn=None):
-        super().__init__(dataset, batch_size=1, shuffle=False, sampler=None, batch_sampler=None,
-                 num_workers=0, collate_fn=default_collate, pin_memory=False, drop_last=False,
-                 timeout=0, worker_init_fn=None)
-        self._dataloader = _DataLoaderIter(self)
+        super().__init__(dataset, batch_size, shuffle, sampler, batch_sampler,
+                 num_workers, collate_fn, pin_memory, drop_last,
+                 timeout, worker_init_fn)
+        self._dataloader = _MyDataLoaderIter(self)
 
     def __iter__(self):
         return self._dataloader
