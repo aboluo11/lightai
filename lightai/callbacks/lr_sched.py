@@ -17,6 +17,6 @@ class LrScheduler(Callback):
 
     def lr_span_param_groups(self, lr: float)->List[float]:
         lrs = []
-        for ratio in enumerate(self.lr_ratio):
+        for ratio in self.lr_ratio:
             lrs.append(ratio * lr)
         return lrs
