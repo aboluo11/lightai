@@ -122,5 +122,5 @@ def freeze_bn(module, freeze):
 
 
 def set_freezed_bn_eval(module):
-    if isinstance(module, torch.nn.modules.batchnorm._BatchNorm) and getattr(module, freeze_bn, False):
+    if isinstance(module, torch.nn.modules.batchnorm._BatchNorm) and getattr(module, 'freeze_bn', False):
         module.eval()
