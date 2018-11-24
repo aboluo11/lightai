@@ -46,6 +46,8 @@ class FP16(Callback):
     def on_step_begin(self, **kwargs):
         for model_group, master_group in zip(self.model_param_groups, self.master_param_groups):
             for model, master in zip(model_group['params'], master_group['params']):
+                if not model.requires_grad:
+                    continue
                 if master.grad is None:
                     master.grad = master.detach().clone()
                 master.grad.data.copy_(model.grad.data)
@@ -54,6 +56,8 @@ class FP16(Callback):
     def on_step_end(self, **kwargs):
         for model_group, master_group in zip(self.model_param_groups, self.master_param_groups):
             for model, master in zip(model_group['params'], master_group['params']):
+                if not model.requires_grad:
+                    continue
                 model.data.copy_(master.data)
                 model.grad.data.zero_()
 
