@@ -38,7 +38,7 @@ class Learner:
             cb.on_train_begin(mb=mb)
         try:
             for epoch in mb:
-                self.model.train()
+                self.train()
                 for cb in callbacks:
                     cb.on_epoch_begin()
                 losses = []
@@ -101,13 +101,26 @@ class Learner:
             for m in layer:
                 for p in m.parameters():
                     p.requires_grad = False
+                apply_leaf(m, freeze_bn, freeze=True)
         for layer in self.layer_groups[n:]:
             for m in layer:
                 for p in m.parameters():
                     p.requires_grad = True
+                apply_leaf(m, freeze_bn, freeze=False)
 
     def unfreeze(self):
-        for layer in self.layer_groups:
-            for m in layer:
-                for p in m.parameters():
-                    p.requires_grad = True
+        self.freeze_to(0)
+
+    def train(self):
+        self.model.train()
+        apply_leaf(self.model, set_freezed_bn_eval)
+
+
+def freeze_bn(module, freeze):
+    if isinstance(module, torch.nn.modules.batchnorm._BatchNorm):
+        module.freeze_bn = freeze
+
+
+def set_freezed_bn_eval(module):
+    if isinstance(module, torch.nn.modules.batchnorm._BatchNorm) and getattr(module, freeze_bn, False):
+        module.eval()

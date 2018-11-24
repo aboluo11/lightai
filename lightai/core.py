@@ -39,3 +39,12 @@ def T(x: np.ndarray, cuda=True):
     if cuda:
         x = x.pin_memory().cuda(non_blocking=True)
     return x
+
+
+def apply_leaf(module, func, **kwargs):
+    childs = list(module.children())
+    if len(childs) == 0:
+        func(module, **kwargs)
+        return
+    for child in childs:
+        apply_leaf(child, func, **kwargs)
