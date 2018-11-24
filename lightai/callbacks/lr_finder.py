@@ -1,5 +1,6 @@
 from ..core import *
 from ..callback import *
+from .lr_sched import *
 
 
 class SmoothenValue:
@@ -17,25 +18,20 @@ class SmoothenValue:
         return smooth
 
 
-class LRFinder(Callback):
-    def __init__(self, model, optimizer, min_lr, max_lr, n_iter):
+class LRFinder(LrScheduler):
+    def __init__(self, model, optimizer, min_lr, max_lr, n_iter, lr_ratio: Sequence[float]=None):
         self.smoother = SmoothenValue()
-        self.optimizer = optimizer
-        self.lrs = np.geomspace(min_lr, max_lr, num=n_iter, endpoint=True)
+        lrs = np.geomspace(min_lr, max_lr, num=n_iter, endpoint=True)
         self.losses = []
-        self.iter = 0
         self.best = None
         self.save_path = Path('saved')
         self.save_path.mkdir(exist_ok=True)
         self.model = model
+        super().__init__(optimizer, lrs, lr_ratio)
 
     def on_train_begin(self, **kwargs):
         torch.save({'model': self.model.state_dict(),
                     'optimizer': self.optimizer.state_dict()}, self.save_path / 'temp')
-
-    def on_batch_begin(self, **kwargs):
-        self.optimizer.param_groups[0]['lr'] = self.lrs[self.iter]
-        self.iter += 1
 
     def on_batch_end(self, trn_loss: float, **kwargs) -> bool:
         trn_loss = self.smoother(trn_loss)
