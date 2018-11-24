@@ -5,12 +5,24 @@ from .core import *
 class Learner:
     def __init__(self, model: nn.Module, trn_dl: DataLoader, val_dl: DataLoader,
                  optim_fn: optim.Optimizer, loss_fn: Callable, metrics: List,
-                 callbacks: List[Callback] = [], writer: Optional[SummaryWriter] = None):
+                 callbacks: List[Callback] = [], writer: Optional[SummaryWriter] = None,
+                 layer_groups: List[List[nn.Module]] = None):
         self.model = model
         self.trn_dl = trn_dl
         self.val_dl = val_dl
         self.optim_fn = optim_fn
-        self.optimizer = optim_fn(model.parameters())
+        self.layer_groups = [model] if layer_groups is None else layer_groups
+        if layer_groups is None:
+            param_groups = [{'params': model.parameters()}]
+        else:
+            param_groups = []
+            for layer in layer_groups:
+                param_group = []
+                for m in layer:
+                    param_group.extend(m.parameters())
+                param_groups.append({'params': param_group})
+        self.param_groups = param_groups
+        self.optimizer = optim_fn(self.param_groups)
         self.loss_fn = loss_fn
         self.callbacks = callbacks
         self.writer = writer
@@ -83,3 +95,19 @@ class Learner:
             loss = np.average(torch.stack(losses).cpu().numpy(), weights=bses)
             res = [loss] + [metric.res() for metric in self.metrics]
             return res
+
+    def freeze_to(self, n):
+        for layer in self.layer_groups[:n]:
+            for m in layer:
+                for p in m.parameters():
+                    p.requires_grad = False
+        for layer in self.layer_groups[n:]:
+            for m in layer:
+                for p in m.parameters():
+                    p.requires_grad = True
+
+    def unfreeze(self):
+        for layer in self.layer_groups:
+            for m in layer:
+                for p in m.parameters():
+                    p.requires_grad = True
