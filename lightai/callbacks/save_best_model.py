@@ -3,7 +3,7 @@ from ..callback import *
 
 
 class SaveBestModel(Callback):
-    def __init__(self, model: nn.Module, optimizer: optim.Optimizer, small_better: bool, model_dir: str='models',
+    def __init__(self, learner, small_better: bool, model_dir: str='saved',
                  name: Optional[str]=None):
         self.model_dir = Path(model_dir)
         self.model_dir.mkdir(exist_ok=True, parents=True)
@@ -11,8 +11,7 @@ class SaveBestModel(Callback):
             self.path = self.model_dir/name
         self.small_better = small_better
         self.best_metrics = None
-        self.model = model
-        self.optimizer = optimizer
+        self.learner = learner
 
     def on_epoch_end(self, eval_res: List[float], **kwargs):
         metrics = eval_res[-1]
@@ -21,8 +20,8 @@ class SaveBestModel(Callback):
         if not self.best_metrics or metrics >= self.best_metrics:
             self.best_metrics = metrics
             torch.save({
-                'model': self.model.state_dict(),
-                'optimizer': self.optimizer.state_dict()
+                'model': self.learner.model.state_dict(),
+                'optimizer': self.learner.optimizer.state_dict()
             }, self.path)
 
     def on_train_end(self, **kwargs):
