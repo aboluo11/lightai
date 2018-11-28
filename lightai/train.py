@@ -43,7 +43,7 @@ class Learner:
                     cb.on_epoch_begin()
                 losses = []
                 for x, target in progress_bar(self.trn_dl, parent=mb):
-                    x, target = x.cuda(), target.cuda()
+                    x, target = x.cuda(non_blocking=True), target.cuda(non_blocking=True)
                     for cb in callbacks:
                         cb.on_batch_begin(x=x, target=target)
                     trn_loss = self.step(x, target)
@@ -85,7 +85,7 @@ class Learner:
         bses = []
         with torch.no_grad():
             for x, target in self.val_dl:
-                x, target = x.cuda(), target.cuda()
+                x, target = x.cuda(non_blocking=True), target.cuda(non_blocking=True)
                 predict = self.model(x)
                 predict = predict.float()
                 for metric in self.metrics:
