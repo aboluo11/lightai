@@ -12,6 +12,6 @@ class Logger(Callback):
             self.writer.add_scalars('loss', {
                 'train': trn_loss,
                 'val': eval_res[0]
-            }, self.epoch)
+            }, epoch)
             for i, name in enumerate(self.metrics_names):
                 self.writer.add_scalar(name, eval_res[i+1], epoch)

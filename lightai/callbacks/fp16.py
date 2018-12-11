@@ -6,7 +6,8 @@ def get_params(learner):
     model_param_groups = learner.param_groups
     master_param_groups = []
     for pg in model_param_groups:
-        master_param_group = [param.detach().clone().float() for param in pg['params']]
+        master_param_group = [param.detach().clone().float()
+                              for param in pg['params']]
         master_param_groups.append({'params': master_param_group})
     return model_param_groups, master_param_groups
 
@@ -16,14 +17,6 @@ def bn_to_float(module):
         module.float()
     for child in module.children():
         bn_to_float(child)
-
-
-class HalfInput(nn.Module):
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, x):
-        return x.half()
 
 
 class FP16(Callback):
@@ -68,4 +61,5 @@ def to_fp16(learner, loss_scale):
     bn_to_float(model)
     model_param_groups, master_param_groups = get_params(learner)
     learner.optimizer = learner.optim_fn(master_param_groups)
-    learner.callbacks.append(FP16(model_param_groups, master_param_groups, loss_scale))
+    learner.callbacks.append(
+        FP16(model_param_groups, master_param_groups, loss_scale))
