@@ -19,7 +19,7 @@ class SmoothenValue:
 
 
 class LRFinder(LrScheduler):
-    def __init__(self, model, optimizer, min_lr, max_lr, n_iter, lr_ratio: Sequence[float]=None):
+    def __init__(self, model, optimizer, min_lr, max_lr, n_iter, lr_ratio: Sequence[float] = None):
         self.smoother = SmoothenValue()
         lrs = np.geomspace(min_lr, max_lr, num=n_iter, endpoint=True)
         self.losses = []
@@ -40,6 +40,8 @@ class LRFinder(LrScheduler):
             self.best = trn_loss
         if trn_loss > self.best * 2:
             return True
+        if len(self.losses) == len(self.lrs):
+            return True
         return False
 
     def on_train_end(self, **kwargs):
@@ -49,5 +51,7 @@ class LRFinder(LrScheduler):
 
     def plot(self, skip_begin=0, skip_end=0):
         total_len = len(self.losses)
+        # plt.figure(figsize=(10, 10))
         plt.xscale('log')
-        plt.plot(self.lrs[skip_begin:total_len - skip_end], self.losses[skip_begin:total_len - skip_end])
+        plt.plot(self.lrs[skip_begin:total_len - skip_end],
+                 self.losses[skip_begin:total_len - skip_end])
