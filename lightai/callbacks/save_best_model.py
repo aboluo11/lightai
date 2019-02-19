@@ -1,4 +1,5 @@
 from ..core import *
+from ..torch_core import *
 from ..callback import *
 
 
@@ -27,5 +28,5 @@ class SaveBestModel(Callback):
     def on_train_end(self, **kwargs):
         if self.best_metrics is None:
             return
-        best = -self.best_metrics if self.small_better else self.best_metrics
+        best = (-1 * self.best_metrics) if self.small_better else self.best_metrics
         print(f'best metric: {best:.6f}')

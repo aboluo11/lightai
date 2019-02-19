@@ -16,4 +16,7 @@ class Printer(Callback):
 
     def on_epoch_end(self, trn_loss: float, eval_res: List[float], epoch: int,
                      mb, **kwargs):
-        mb.write(self.layout.format(epoch, trn_loss, *eval_res))
+        if eval_res:
+            mb.write(self.layout.format(epoch, trn_loss, *eval_res))
+        else:
+            mb.write(self.layout.format(epoch, trn_loss, 0))

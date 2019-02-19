@@ -1,4 +1,5 @@
 from ..core import *
+from ..torch_core import *
 from ..callback import *
 from .lr_sched import *
 
@@ -19,15 +20,15 @@ class SmoothenValue:
 
 
 class LRFinder(LrScheduler):
-    def __init__(self, model, optimizer, min_lr, max_lr, n_iter, lr_ratio: Sequence[float] = None):
+    def __init__(self, learner, min_lr, max_lr, n_iter, lr_ratio: Sequence[float] = None):
         self.smoother = SmoothenValue()
         lrs = np.geomspace(min_lr, max_lr, num=n_iter, endpoint=True)
         self.losses = []
         self.best = None
         self.save_path = Path('saved')
         self.save_path.mkdir(exist_ok=True)
-        self.model = model
-        super().__init__(optimizer, lrs, lr_ratio)
+        self.model = learner.model
+        super().__init__(learner.optimizer, lrs, lr_ratio)
 
     def on_train_begin(self, **kwargs):
         torch.save({'model': self.model.state_dict(),

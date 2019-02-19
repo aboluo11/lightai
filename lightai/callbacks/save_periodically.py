@@ -1,9 +1,10 @@
 from ..core import *
+from ..torch_core import *
 from ..callback import *
 
 
 class SavePeriodically(Callback):
-    def __init__(self, period: int, name: str='saved'):
+    def __init__(self, period: int, name: str = 'saved'):
         self.period = period
         self.path = name
 

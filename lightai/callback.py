@@ -31,3 +31,6 @@ class Callback:
 
     def on_step_end(self, **kwargs):
         pass
+
+    def on_eval_begin(self, **kwargs):
+        pass

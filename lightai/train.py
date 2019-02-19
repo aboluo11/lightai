@@ -1,5 +1,6 @@
 from .callbacks import *
 from .core import *
+from .torch_core import *
 
 
 class Learner:
@@ -43,8 +44,14 @@ class Learner:
                     cb.on_epoch_begin()
                 losses = []
                 for x, target in progress_bar(self.trn_dl, parent=mb):
-                    x, target = x.cuda(non_blocking=True), target.cuda(
-                        non_blocking=True)
+                    if isinstance(x, (list, tuple)):
+                        x = [each.cuda(non_blocking=True) for each in x]
+                    else:
+                        x = x.cuda(non_blocking=True)
+                    if isinstance(target, (list, tuple)):
+                        target = [t.cuda(non_blocking=True) for t in target]
+                    else:
+                        target = target.cuda(non_blocking=True)
                     for cb in callbacks:
                         cb.on_batch_begin(x=x, target=target)
                     trn_loss = self.step(x, target)
@@ -54,7 +61,11 @@ class Learner:
                         if stop:
                             return
                 trn_loss = np.mean(losses)
-                eval_res = self.evaluate()
+                for cb in callbacks:
+                    cb.on_eval_begin(trn_loss=trn_loss)
+                eval_res = None
+                if self.val_dl:
+                    eval_res = self.evaluate()
                 self.epoch += 1
                 for cb in callbacks:
                     cb.on_epoch_end(trn_loss=trn_loss, eval_res=eval_res, epoch=self.epoch,
@@ -65,7 +76,10 @@ class Learner:
 
     def step(self, x: np.ndarray, target: np.ndarray) -> float:
         predict = self.model(x)
-        predict = predict.float()
+        if isinstance(predict, (list, tuple)):
+            predict = [p.float() for p in predict]
+        else:
+            predict = predict.float()
         loss = self.loss_fn(predict, target)
         self.optimizer.zero_grad()
         for cb in self.callbacks:
@@ -86,14 +100,26 @@ class Learner:
         bses = []
         with torch.no_grad():
             for x, target in self.val_dl:
-                x, target = x.cuda(non_blocking=True), target.cuda(
-                    non_blocking=True)
+                if isinstance(x, (list, tuple)):
+                    x = [each.cuda(non_blocking=True) for each in x]
+                else:
+                    x = x.cuda(non_blocking=True)
+                if isinstance(target, (list, tuple)):
+                    target = [t.cuda(non_blocking=True) for t in target]
+                else:
+                    target = target.cuda(non_blocking=True)
                 predict = self.model(x)
-                predict = predict.float()
+                if isinstance(predict, (list, tuple)):
+                    predict = [p.float() for p in predict]
+                else:
+                    predict = predict.float()
                 for metric in self.metrics:
                     metric(predict, target)
                 losses.append(self.loss_fn(predict, target))
-                bses.append(target.shape[0])
+                if isinstance(target, (list, tuple)):
+                    bses.append(target[0].shape[0])
+                else:
+                    bses.append(target.shape[0])
             loss = np.average(torch.stack(losses).cpu().numpy(), weights=bses)
             res = [loss] + [metric.res() for metric in self.metrics]
             return res
